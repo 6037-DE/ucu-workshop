@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_users
+    description: "Staging: users — renames id to user_id and standardizes fields"
+    tests:
+      - unique:
+          column_name: user_id
+      - not_null:
+          column_name: user_id
+
+  - name: stg_products
+    description: "Staging: products — product attributes and prices"
+    tests:
+      - unique:
+          column_name: product_id
+      - not_null:
+          column_name: product_id
+
+  - name: stg_orders
+    description: "Staging: orders — order header timestamps and status"
+    tests:
+      - not_null:
+          column_name: order_id
+
+  - name: stg_order_items
+    description: "Staging: order_items — prices and statuses"
+    tests:
+      - not_null:
+          column_name: order_item_id
+
+  - name: stg_events
+    description: "Staging: events — normalized event types and dates"
+    tests:
+      - not_null:
+          column_name: event_id
+      - accepted_values:
+          column_name: event_type
+          values: ["view", "add_to_cart", "purchase"]

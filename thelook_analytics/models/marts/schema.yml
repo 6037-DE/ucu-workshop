@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "Customers dimension combining user profile and basic activity stats"
+    tests:
+      - not_null:
+          column_name: user_id
+      - unique:
+          column_name: user_id
+
+  - name: dim_products
+    description: "Products dimension with computed gross_margin"
+    tests:
+      - not_null:
+          column_name: product_id
+      - unique:
+          column_name: product_id
+
+  - name: fact_orders_finance
+    description: "Order-level financial facts (revenue, cost, profit)"
+    tests:
+      - not_null:
+          column_name: order_id
+      - relationships:
+          to: ref('dim_customers')
+          field: user_id
+
+
+  - name: fact_finance_daily
+    description: "Daily finance aggregates partitioned by date"
+    tests:
+      - not_null:
+          column_name: date
+
+  - name: fact_marketing_daily
+    description: "Daily marketing aggregates by cohort/date"
+    tests:
+      - not_null:
+          column_name: date

@@ -1,0 +1,74 @@
+name: Triggered dbt dev and prod run
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DBT_PROFILES_DIR: ./
+
+jobs:
+  dbt_run_dev:
+    name: dbt dev build
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-key.json
+      GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+
+      - name: Write GCP service account key
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > /tmp/gcp-key.json
+          chmod 600 /tmp/gcp-key.json
+
+      - name: Install dependencies
+        run: |
+          pip install dbt-bigquery
+
+      - name: Run dbt models
+        run: dbt build
+        working-directory: ./dbt_hol
+
+  dbt_run_prod:
+    name: dbt prod build
+    needs: dbt_run_dev
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+
+      - name: Write GCP service account key
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > /tmp/gcp-key.json
+          chmod 600 /tmp/gcp-key.json
+
+      - name: Install dependencies
+        run: |
+          pip install dbt-bigquery
+
+      - name: Download dbt run artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dbt-run-results
+          path: ./dbt_hol/target
+
+      - name: Run dbt models for prod
+        run: dbt build --target prod
+        working-directory: ./dbt_hol

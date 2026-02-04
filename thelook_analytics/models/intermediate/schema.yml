@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: int_user_first_touch
+    description: "First event per user (cohort start)"
+    tests:
+      - not_null:
+          column_name: user_id
+
+  - name: int_event_sessions
+    description: "Session rollups with user and duration"
+    tests:
+      - not_null:
+          column_name: session_id
+
+  - name: int_funnel_events
+    description: "Funnel flags per session"
+    tests:
+      - not_null:
+          column_name: session_id
+
+  - name: int_order_revenue
+    description: "Order-level revenue with item counts and averages"
+    tests:
+      - unique:
+          column_name: order_id
+      - not_null:
+          column_name: revenue
+
+  - name: int_order_cost
+    description: "Order-level cost with item counts"
+    tests:
+      - not_null:
+          column_name: cost
+
+  - name: int_order_profit
+    description: "Order-level profit and margin calculations"
+    tests:
+      - not_null:
+          column_name: gross_profit
